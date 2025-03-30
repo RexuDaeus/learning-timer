@@ -13,6 +13,7 @@ type TimersContextType = {
   deleteTimer: (id: string) => Promise<void>
   getTimer: (id: string) => Timer | undefined
   loading: boolean
+  error: string | null
 }
 
 const TimersContext = createContext<TimersContextType | undefined>(undefined)
@@ -30,19 +31,37 @@ const exampleTimer: Timer = {
 export function TimersProvider({ children }: { children: React.ReactNode }) {
   const [timers, setTimers] = useState<Timer[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const { user } = useAuth()
+  
+  // Reset state when user changes
+  useEffect(() => {
+    setTimers([])
+    setLoading(true)
+    setError(null)
+  }, [user?.id])
 
   // Load timers from Supabase
   useEffect(() => {
+    let isMounted = true;
+    let realtimeSubscription: any;
+    
     if (!user) {
       setTimers([])
       setLoading(false)
-      return
+      return () => {
+        isMounted = false;
+      }
     }
 
     const fetchTimers = async () => {
+      if (!isMounted) return;
+      
       setLoading(true)
+      setError(null)
+      
       try {
+        console.log("Fetching timers for user:", user.id);
         const { data, error } = await supabase
           .from('timers')
           .select('*')
@@ -51,52 +70,76 @@ export function TimersProvider({ children }: { children: React.ReactNode }) {
 
         if (error) {
           console.error('Error loading timers:', error)
-          setTimers([])
+          if (isMounted) {
+            setError(error.message)
+            setTimers([])
+          }
         } else {
+          if (!isMounted) return;
+          
           // Convert snake_case to camelCase
           const formattedTimers = data.map(timer => ({
             id: timer.id,
             title: timer.title,
             goal: timer.goal,
-            skillBreakdown: timer.skill_breakdown,
-            resources: timer.resources,
+            skillBreakdown: timer.skill_breakdown || [],
+            resources: timer.resources || '',
             timeLeft: timer.time_left,
             createdAt: timer.created_at
           }))
+          
+          console.log("Fetched timers:", formattedTimers);
           setTimers(formattedTimers)
+          setError(null)
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Unexpected error loading timers:', err)
-        setTimers([])
+        if (isMounted) {
+          setError(err.message || 'Failed to load timers')
+          setTimers([])
+        }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
 
     fetchTimers()
 
     // Set up real-time subscription for timers
-    const subscription = supabase
-      .channel('timers_changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'timers',
-        filter: `user_id=eq.${user.id}`
-      }, () => {
-        fetchTimers()
-      })
-      .subscribe()
+    if (user) {
+      realtimeSubscription = supabase
+        .channel('timers_changes')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'timers',
+          filter: `user_id=eq.${user.id}`
+        }, (payload) => {
+          console.log('Real-time update received:', payload);
+          fetchTimers()
+        })
+        .subscribe((status) => {
+          console.log('Real-time subscription status:', status);
+        })
+    }
 
     return () => {
-      subscription.unsubscribe()
+      isMounted = false;
+      if (realtimeSubscription) {
+        realtimeSubscription.unsubscribe()
+      }
     }
   }, [user])
 
   const addTimer = async (timer: Timer) => {
     if (!user) return
 
+    setError(null)
+    
     try {
+      console.log("Adding new timer:", timer);
       const { error } = await supabase.from('timers').insert({
         id: timer.id,
         user_id: user.id,
@@ -110,19 +153,24 @@ export function TimersProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('Error adding timer:', error)
+        setError(error.message)
       } else {
         // Optimistically update the UI
         setTimers(prev => [...prev, timer])
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Unexpected error adding timer:', err)
+      setError(err.message || 'Failed to add timer')
     }
   }
 
   const updateTimer = async (updatedTimer: Timer) => {
     if (!user) return
 
+    setError(null)
+    
     try {
+      console.log("Updating timer:", updatedTimer);
       const { error } = await supabase.from('timers')
         .update({
           title: updatedTimer.title,
@@ -136,21 +184,26 @@ export function TimersProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('Error updating timer:', error)
+        setError(error.message)
       } else {
         // Optimistically update the UI
         setTimers(prev => prev.map(timer => 
           timer.id === updatedTimer.id ? updatedTimer : timer
         ))
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Unexpected error updating timer:', err)
+      setError(err.message || 'Failed to update timer')
     }
   }
 
   const deleteTimer = async (id: string) => {
     if (!user) return
 
+    setError(null)
+    
     try {
+      console.log("Deleting timer:", id);
       const { error } = await supabase.from('timers')
         .delete()
         .eq('id', id)
@@ -158,12 +211,14 @@ export function TimersProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('Error deleting timer:', error)
+        setError(error.message)
       } else {
         // Optimistically update the UI
         setTimers(prev => prev.filter(timer => timer.id !== id))
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Unexpected error deleting timer:', err)
+      setError(err.message || 'Failed to delete timer')
     }
   }
 
@@ -172,7 +227,7 @@ export function TimersProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <TimersContext.Provider value={{ timers, addTimer, updateTimer, deleteTimer, getTimer, loading }}>
+    <TimersContext.Provider value={{ timers, addTimer, updateTimer, deleteTimer, getTimer, loading, error }}>
       {children}
     </TimersContext.Provider>
   )

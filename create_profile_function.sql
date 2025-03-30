@@ -27,6 +27,11 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Set RLS policies
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can view their own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update their own profile" ON profiles;
+DROP POLICY IF EXISTS "System can insert user profiles" ON profiles;
+
 -- Create policies
 -- 1. Allow users to view their own profile
 CREATE POLICY "Users can view their own profile"

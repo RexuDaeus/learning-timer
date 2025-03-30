@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,11 +14,18 @@ export default function DashboardPage() {
   const router = useRouter()
   const { user } = useAuth()
   const [distractionsRemoved, setDistractionsRemoved] = useState(false)
+  const [isClient, setIsClient] = useState(false)
 
-  if (!user) {
-    router.push("/login")
-    return null
-  }
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  useEffect(() => {
+    if (isClient && !user) {
+      console.log("No user found in DashboardPage, redirecting to login")
+      router.push("/login")
+    }
+  }, [isClient, user, router])
 
   const handleContinue = () => {
     if (distractionsRemoved) {
@@ -39,6 +46,18 @@ export default function DashboardPage() {
   const item = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 },
+  }
+
+  // Don't render anything on the server side or if no user is found
+  if (!isClient || !user) {
+    return (
+      <div className="h-screen flex items-center justify-center p-4 bg-[url('/purple-bg.svg')] bg-cover bg-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-t-2 border-purple-500 border-solid rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-purple-200">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
