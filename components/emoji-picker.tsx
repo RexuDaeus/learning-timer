@@ -198,12 +198,15 @@ export function EmojiPicker({ value, onChange }: EmojiPickerProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="w-16 h-16 text-3xl">
+        <Button 
+          variant="outline" 
+          className="w-16 h-16 text-3xl bg-purple-900/30 border-purple-500/50 hover:bg-purple-800/50 hover:border-pink-400 transition-all duration-300 transform hover:scale-105"
+        >
           {value || "😊"}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0">
-        <div className="border-b p-3">
+      <PopoverContent className="w-80 p-0 bg-purple-900/90 border-purple-500/50 backdrop-blur-sm">
+        <div className="border-b border-purple-500/30 p-3">
           <div className="flex gap-2 overflow-x-auto pb-2">
             {emojiCategories.map((category) => (
               <Button
@@ -211,6 +214,11 @@ export function EmojiPicker({ value, onChange }: EmojiPickerProps) {
                 variant={selectedCategory === category.name ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setSelectedCategory(category.name)}
+                className={
+                  selectedCategory === category.name 
+                    ? "bg-purple-600 hover:bg-purple-700 text-white" 
+                    : "text-purple-200 hover:bg-purple-800/50 hover:text-white"
+                }
               >
                 {category.name}
               </Button>
@@ -222,7 +230,12 @@ export function EmojiPicker({ value, onChange }: EmojiPickerProps) {
             {emojiCategories
               .find((category) => category.name === selectedCategory)
               ?.emojis.map((emoji, index) => (
-                <Button key={index} variant="ghost" className="h-8 w-8 p-0 text-lg" onClick={() => onChange(emoji)}>
+                <Button 
+                  key={index} 
+                  variant="ghost" 
+                  className="h-8 w-8 p-0 text-lg hover:bg-purple-700/50 transition-all duration-200 transform hover:scale-110" 
+                  onClick={() => onChange(emoji)}
+                >
                   {emoji}
                 </Button>
               ))}

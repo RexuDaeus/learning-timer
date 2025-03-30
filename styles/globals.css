@@ -2,11 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;500;600&display=swap');
 
 body {
   font-family: 'Source Sans Pro', sans-serif;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+  background: linear-gradient(135deg, #2c0645 0%, #1a0329 100%);
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
@@ -19,17 +19,54 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at 50% 50%, rgba(147, 51, 234, 0.1) 0%, rgba(147, 51, 234, 0.05) 50%, transparent 100%);
+  background: radial-gradient(circle at 50% 50%, rgba(147, 51, 234, 0.2) 0%, rgba(147, 51, 234, 0.1) 50%, transparent 100%);
   pointer-events: none;
   z-index: -1;
 }
 
+/* Animated floating orbs */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.5;
+  z-index: -1;
+  animation: float 20s infinite ease-in-out;
+}
+
+.orb-1 {
+  width: 300px;
+  height: 300px;
+  background: linear-gradient(135deg, #9333ea 0%, #c026d3 100%);
+  top: 10%;
+  left: 15%;
+  animation-delay: 0s;
+}
+
+.orb-2 {
+  width: 200px;
+  height: 200px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  bottom: 15%;
+  right: 10%;
+  animation-delay: -5s;
+}
+
+.orb-3 {
+  width: 150px;
+  height: 150px;
+  background: linear-gradient(135deg, #db2777 0%, #9333ea 100%);
+  bottom: 25%;
+  left: 20%;
+  animation-delay: -10s;
+}
+
 .dark body {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background: linear-gradient(135deg, #1a0329 0%, #0f0116 100%);
 }
 
 .dark body::before {
-  background: radial-gradient(circle at 50% 50%, rgba(147, 51, 234, 0.15) 0%, rgba(147, 51, 234, 0.08) 50%, transparent 100%);
+  background: radial-gradient(circle at 50% 50%, rgba(147, 51, 234, 0.25) 0%, rgba(147, 51, 234, 0.12) 50%, transparent 100%);
 }
 
 @layer utilities {
@@ -117,54 +154,65 @@ body::before {
 /* Elegant animations */
 @keyframes float {
   0% {
-    transform: translateY(0px);
+    transform: translateY(0px) translateX(0px);
+  }
+  25% {
+    transform: translateY(-15px) translateX(10px);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(0px) translateX(20px);
+  }
+  75% {
+    transform: translateY(15px) translateX(10px);
   }
   100% {
-    transform: translateY(0px);
+    transform: translateY(0px) translateX(0px);
   }
 }
 
 @keyframes glow {
   0% {
-    box-shadow: 0 0 5px rgba(147, 51, 234, 0.2);
+    box-shadow: 0 0 10px rgba(147, 51, 234, 0.3);
   }
   50% {
-    box-shadow: 0 0 20px rgba(147, 51, 234, 0.4);
+    box-shadow: 0 0 30px rgba(147, 51, 234, 0.6);
   }
   100% {
-    box-shadow: 0 0 5px rgba(147, 51, 234, 0.2);
+    box-shadow: 0 0 10px rgba(147, 51, 234, 0.3);
   }
 }
 
 .animate-float {
-  animation: float 6s ease-in-out infinite;
+  animation: float 12s ease-in-out infinite;
 }
 
 .animate-glow {
-  animation: glow 3s ease-in-out infinite;
+  animation: glow 5s ease-in-out infinite;
 }
 
 /* Font classes */
 .font-elegant {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Great Vibes', cursive;
 }
 
 .font-body {
   font-family: 'Source Sans Pro', sans-serif;
 }
 
+.font-display {
+  font-family: 'Playfair Display', serif;
+}
+
 /* Card styles */
 .card {
-  @apply bg-card/80 backdrop-blur-sm border border-border/50 shadow-lg;
+  @apply bg-card/30 backdrop-blur-sm border border-purple-500/30 shadow-lg;
   transition: all 0.3s ease;
 }
 
 .card:hover {
-  @apply bg-card/90;
+  @apply bg-card/40;
   transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(147, 51, 234, 0.3);
 }
 
 /* Button styles */
@@ -175,15 +223,15 @@ body::before {
 .btn-elegant:hover {
   @apply bg-primary;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+  box-shadow: 0 4px 20px rgba(147, 51, 234, 0.4);
 }
 
 /* Input styles */
 .input-elegant {
-  @apply bg-background/50 border-primary/20 focus:border-primary/40 transition-all duration-300;
+  @apply bg-white/10 backdrop-blur-sm border-purple-500/30 focus:border-purple-500/60 transition-all duration-300;
 }
 
 .input-elegant:focus {
-  @apply bg-background/80;
-  box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.1);
+  @apply bg-white/20;
+  box-shadow: 0 0 10px rgba(147, 51, 234, 0.2);
 }

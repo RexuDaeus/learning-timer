@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useAuth } from "@/components/auth-provider"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { motion } from "framer-motion"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -22,15 +23,22 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError(null)
 
     try {
-      await login(email, password, rememberMe)
-      router.push("/dashboard")
-    } catch (error) {
+      const result = await login(email, password, rememberMe)
+      if (result.error) {
+        setError(result.error)
+      } else {
+        router.push("/dashboard")
+      }
+    } catch (error: any) {
+      setError(error?.message || "Login failed. Please check your credentials and try again.")
       console.error("Login failed:", error)
     } finally {
       setIsLoading(false)
@@ -38,7 +46,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background to-primary/5">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[url('/purple-bg.svg')] bg-cover bg-center">
       <motion.div
         className="absolute top-4 right-4"
         initial={{ opacity: 0 }}
@@ -54,20 +62,25 @@ export default function LoginPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <Card className="border-primary/20 shadow-lg shadow-primary/10">
+        <Card className="backdrop-blur-sm bg-white/10 border-purple-500/20 shadow-lg shadow-purple-500/10">
           <CardHeader className="space-y-1">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <CardTitle className="text-2xl text-center bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-400">
+              <CardTitle className="text-2xl text-center font-elegant bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-300">
                 The First 20 Hours
               </CardTitle>
             </motion.div>
             <CardDescription className="text-center">Login to your account</CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
             <form onSubmit={handleSubmit} className="space-y-4">
               <motion.div
                 className="space-y-2"
@@ -83,7 +96,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="border-primary/20 focus:border-primary"
+                  className="input-elegant"
                 />
               </motion.div>
               <motion.div
@@ -99,7 +112,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="border-primary/20 focus:border-primary"
+                  className="input-elegant"
                 />
               </motion.div>
               <motion.div
@@ -119,7 +132,7 @@ export default function LoginPage() {
                 </Label>
               </motion.div>
               <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6 }}>
-                <Button type="submit" className="w-full relative overflow-hidden group" disabled={isLoading}>
+                <Button type="submit" className="w-full btn-elegant" disabled={isLoading}>
                   <span className="relative z-10">{isLoading ? "Logging in..." : "Login"}</span>
                   {!isLoading && (
                     <span className="absolute inset-0 bg-white/20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>

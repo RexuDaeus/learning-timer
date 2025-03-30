@@ -16,7 +16,7 @@ export function Header() {
 
   return (
     <motion.header
-      className="border-b border-primary/20 bg-background/80 backdrop-blur-sm sticky top-0 z-50"
+      className="border-b border-purple-500/20 bg-purple-900/30 backdrop-blur-sm sticky top-0 z-50"
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
@@ -25,7 +25,7 @@ export function Header() {
         <div className="flex items-center gap-6">
           <Link
             href="/dashboard"
-            className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-400"
+            className="text-2xl font-cursive bg-clip-text text-transparent bg-gradient-to-r from-pink-300 to-purple-200"
           >
             The First 20 Hours
           </Link>
@@ -34,13 +34,17 @@ export function Header() {
           <ThemeToggle />
           {user && (
             <>
-              <Link href="/profile" className="flex items-center gap-2 group">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 transition-transform group-hover:scale-110">
+              <Link href="/profile" className="flex items-center gap-2 group text-purple-100">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-600/30 transition-transform group-hover:scale-110">
                   <span className="text-lg">{user.emoji}</span>
                 </div>
-                <span className="hidden md:inline-block group-hover:text-primary transition-colors">{user.name}</span>
+                <span className="hidden md:inline-block group-hover:text-pink-300 transition-colors">{user.name}</span>
               </Link>
-              <Button variant="ghost" onClick={logout} className="hover:bg-primary/10 hover:text-primary">
+              <Button 
+                variant="ghost" 
+                onClick={logout} 
+                className="text-purple-100 hover:bg-purple-700/50 hover:text-pink-300"
+              >
                 Logout
               </Button>
             </>

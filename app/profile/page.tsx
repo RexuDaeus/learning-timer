@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useAuth } from "@/components/auth-provider"
 import { Header } from "@/components/header"
 import { EmojiPicker } from "@/components/emoji-picker"
+import { motion } from "framer-motion"
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -31,7 +32,7 @@ export default function ProfilePage() {
     setIsLoading(true)
 
     try {
-      updateUser({ name, email, emoji })
+      await updateUser({ name, emoji })
       // Show success message or notification here
     } catch (error) {
       console.error("Profile update failed:", error)
@@ -43,41 +44,73 @@ export default function ProfilePage() {
   return (
     <>
       <Header />
-      <div className="container max-w-2xl py-10">
-        <Card>
-          <CardHeader>
-            <CardTitle>Profile</CardTitle>
-            <CardDescription>Update your profile information</CardDescription>
+      <motion.div 
+        className="container max-w-2xl py-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Card className="backdrop-blur-sm bg-white/10 border-purple-500/20 shadow-lg">
+          <CardHeader className="bg-purple-900/20 rounded-t-lg">
+            <CardTitle className="text-2xl font-cursive text-white">Your Profile</CardTitle>
+            <CardDescription className="text-purple-100">Update your personal information</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6 text-purple-100">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="flex justify-center mb-4">
                 <EmojiPicker value={emoji} onChange={setEmoji} />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+                <Label htmlFor="name" className="text-purple-100">Name</Label>
+                <Input 
+                  id="name" 
+                  value={name} 
+                  onChange={(e) => setName(e.target.value)} 
+                  required 
+                  className="bg-purple-900/30 border-purple-500/30 text-white focus:border-pink-400 focus-visible:ring-purple-500"
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <Label htmlFor="email" className="text-purple-100">Email</Label>
+                <Input 
+                  id="email" 
+                  type="email" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  required 
+                  className="bg-purple-900/30 border-purple-500/30 text-white focus:border-pink-400 focus-visible:ring-purple-500"
+                  disabled
+                />
+                <p className="text-xs text-purple-300">Email cannot be changed after registration</p>
               </div>
-              <Button type="submit" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                disabled={isLoading}
+                className="bg-purple-700 hover:bg-purple-800 text-white"
+              >
                 {isLoading ? "Saving..." : "Save Changes"}
               </Button>
             </form>
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button variant="outline" onClick={() => router.push("/dashboard")}>
+          <CardFooter className="flex justify-between bg-purple-900/10">
+            <Button 
+              variant="outline" 
+              onClick={() => router.push("/dashboard")}
+              className="border-purple-500/30 text-purple-100 hover:bg-purple-800/50 hover:text-white"
+            >
               Back to Dashboard
             </Button>
-            <Button variant="destructive" onClick={logout}>
+            <Button 
+              variant="destructive" 
+              onClick={logout}
+              className="bg-red-800 hover:bg-red-900"
+            >
               Logout
             </Button>
           </CardFooter>
         </Card>
-      </div>
+      </motion.div>
     </>
   )
 }
