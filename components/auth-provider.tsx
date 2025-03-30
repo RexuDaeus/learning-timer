@@ -149,7 +149,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Register function with Supabase
   const register = async (name: string, email: string, password: string, emoji: string) => {
     try {
-      // Create the user
+      // First, create the user
       const { data, error: signUpError } = await supabase.auth.signUp({ 
         email, 
         password,
@@ -169,30 +169,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!data.user) {
         return { error: 'Failed to create user' }
       }
+
+      // Wait a moment for the auth policies to be applied
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Immediately create a profile for the user
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: data.user.id,
-          name,
-          emoji
-        })
-      
-      if (profileError) {
-        console.error("Profile creation error:", profileError)
-        return { error: `Account created but profile setup failed: ${profileError.message}` }
+      try {
+        // Use the user's own session to create the profile - this works with RLS
+        const { data: authData } = await supabase.auth.getSession();
+        
+        if (authData.session) {
+          // Now create a profile for the user
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              id: data.user.id,
+              name,
+              emoji
+            });
+            
+          if (profileError) {
+            console.error("Profile creation error:", profileError);
+            
+            // If we still have RLS issues, create the profile using special function
+            if (profileError.message.includes("violates row-level security policy")) {
+              // Try a special function call to bypass RLS if your backend supports it
+              const { error: functionError } = await supabase.rpc('create_profile', {
+                user_id: data.user.id,
+                user_name: name,
+                user_emoji: emoji
+              });
+              
+              if (functionError) {
+                console.error("Function error:", functionError);
+                return { error: `Account created but profile setup failed: ${functionError.message}` };
+              }
+            } else {
+              return { error: `Account created but profile setup failed: ${profileError.message}` };
+            }
+          }
+        } else {
+          return { error: 'Account created but no session available for profile creation' };
+        }
+      } catch (err: any) {
+        console.error('Profile creation error:', err);
+        return { error: `Account created but profile setup failed: ${err.message}` };
       }
       
-      // Set the user immediately to avoid waiting for onAuthStateChange
+      // Set the user immediately
       setUser({
         id: data.user.id,
         name,
         email,
         emoji
-      })
+      });
       
-      return { error: null }
+      return { error: null };
     } catch (err: any) {
       console.error('Registration error:', err)
       return { error: err.message || 'An unexpected error occurred' }

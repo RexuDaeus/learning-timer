@@ -46,7 +46,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[url('/purple-bg.svg')] bg-cover bg-center">
+    <div className="h-screen flex items-center justify-center p-4 bg-[url('/purple-bg.svg')] bg-cover bg-center overflow-hidden">
       <motion.div
         className="absolute top-4 right-4"
         initial={{ opacity: 0 }}
@@ -69,11 +69,11 @@ export default function LoginPage() {
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <CardTitle className="text-2xl text-center font-elegant bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-300">
+              <CardTitle className="text-2xl text-center font-cursive bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-300">
                 The First 20 Hours
               </CardTitle>
             </motion.div>
-            <CardDescription className="text-center">Login to your account</CardDescription>
+            <CardDescription className="text-center text-purple-100">Login to your account</CardDescription>
           </CardHeader>
           <CardContent>
             {error && (
@@ -88,7 +88,7 @@ export default function LoginPage() {
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.3 }}
               >
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-purple-100">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -96,7 +96,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="input-elegant"
+                  className="bg-purple-900/30 border-purple-500/30 text-white focus:border-pink-400 focus-visible:ring-purple-500"
                 />
               </motion.div>
               <motion.div
@@ -105,14 +105,14 @@ export default function LoginPage() {
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.4 }}
               >
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-purple-100">Password</Label>
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="input-elegant"
+                  className="bg-purple-900/30 border-purple-500/30 text-white focus:border-pink-400 focus-visible:ring-purple-500"
                 />
               </motion.div>
               <motion.div
@@ -125,14 +125,18 @@ export default function LoginPage() {
                   id="remember"
                   checked={rememberMe}
                   onCheckedChange={(checked) => setRememberMe(checked === true)}
-                  className="checkbox-animate data-[state=checked]:bg-primary"
+                  className="checkbox-animate data-[state=checked]:bg-purple-600"
                 />
-                <Label htmlFor="remember" className="text-sm">
+                <Label htmlFor="remember" className="text-sm text-purple-100">
                   Keep me signed in
                 </Label>
               </motion.div>
               <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6 }}>
-                <Button type="submit" className="w-full btn-elegant" disabled={isLoading}>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-purple-700 hover:bg-purple-800 text-white" 
+                  disabled={isLoading}
+                >
                   <span className="relative z-10">{isLoading ? "Logging in..." : "Login"}</span>
                   {!isLoading && (
                     <span className="absolute inset-0 bg-white/20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>
@@ -143,13 +147,13 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="flex justify-center">
             <motion.p
-              className="text-sm text-muted-foreground"
+              className="text-sm text-purple-200"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7 }}
             >
               Don't have an account?{" "}
-              <Link href="/register" className="text-primary hover:underline">
+              <Link href="/register" className="text-pink-300 hover:text-pink-200 hover:underline">
                 Register
               </Link>
             </motion.p>

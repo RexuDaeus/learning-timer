@@ -11,6 +11,11 @@ export type Tables = {
     email: string
     created_at: string
   }
+  profiles: {
+    id: string
+    name: string
+    emoji: string
+  }
   timers: {
     id: string
     user_id: string
