@@ -2,9 +2,9 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -17,6 +17,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { login } = useAuth()
 
   const [email, setEmail] = useState("")
@@ -24,6 +25,11 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,18 +37,39 @@ export default function LoginPage() {
     setError(null)
 
     try {
+      console.log("Attempting login for:", email)
       const result = await login(email, password, rememberMe)
       if (result.error) {
+        console.error("Login returned error:", result.error)
         setError(result.error)
       } else {
-        router.push("/dashboard")
+        // Get the from parameter for redirection
+        const from = searchParams.get('from') || '/dashboard'
+        console.log("Login successful, redirecting to:", from)
+        
+        // Add a slight delay to allow the session to be properly set
+        setTimeout(() => {
+          router.push(from)
+        }, 500)
       }
     } catch (error: any) {
+      console.error("Login exception:", error)
       setError(error?.message || "Login failed. Please check your credentials and try again.")
-      console.error("Login failed:", error)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Don't render form on server
+  if (!isClient) {
+    return (
+      <div className="h-screen flex items-center justify-center p-4 bg-[url('/purple-bg.svg')] bg-cover bg-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-t-2 border-purple-500 border-solid rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-purple-200">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

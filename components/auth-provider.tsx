@@ -133,15 +133,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Login function with Supabase
   const login = async (email: string, password: string, remember: boolean) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      console.log(`Attempting to login user: ${email}`)
+      
+      // Use the correct options structure for signInWithPassword
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
       
       if (error) {
+        console.error('Login error from Supabase:', error)
         return { error: error.message }
+      }
+      
+      if (!data.user) {
+        console.error('No user returned from login')
+        return { error: 'No user found' }
+      }
+      
+      // If remember is true, update session persistence
+      if (remember) {
+        await supabase.auth.updateUser({
+          data: { remember_me: true }
+        })
+      }
+      
+      console.log('Login successful, session established:', data.user.id)
+      
+      // Get the user profile
+      try {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .single()
+        
+        if (profileError) {
+          console.error('Error fetching profile after login:', profileError)
+        } else if (profile) {
+          console.log('Profile fetched after login:', profile)
+          // Set the user immediately
+          setUser({
+            id: data.user.id,
+            name: profile.name || '',
+            email: data.user.email || '',
+            emoji: profile.emoji || '😊'
+          })
+        } else {
+          console.warn('No profile found for user after login:', data.user.id)
+        }
+      } catch (profileErr) {
+        console.error('Unexpected error fetching profile after login:', profileErr)
       }
       
       return { error: null }
     } catch (err: any) {
-      console.error('Login error:', err)
+      console.error('Unexpected login error:', err)
       return { error: err.message || 'An unexpected error occurred' }
     }
   }

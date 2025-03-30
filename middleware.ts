@@ -8,39 +8,67 @@ export async function middleware(req: NextRequest) {
   
   try {
     const { data: { session } } = await supabase.auth.getSession()
+    const pathname = req.nextUrl.pathname
+
+    // Debug info
+    console.log(`Middleware running for path: ${pathname}, Session exists: ${!!session}`)
 
     // Check if the path is a protected route
     const isProtectedRoute = 
-      req.nextUrl.pathname.startsWith('/timers') || 
-      req.nextUrl.pathname.startsWith('/create-timer') ||
-      req.nextUrl.pathname.startsWith('/edit-timer') ||
-      req.nextUrl.pathname.startsWith('/dashboard') ||
-      req.nextUrl.pathname.startsWith('/profile');
+      pathname.startsWith('/timers') || 
+      pathname.startsWith('/create-timer') ||
+      pathname.startsWith('/edit-timer') ||
+      pathname.startsWith('/dashboard') ||
+      pathname.startsWith('/profile');
 
     // Check if the path is an auth page
     const isAuthRoute = 
-      req.nextUrl.pathname.startsWith('/login') || 
-      req.nextUrl.pathname.startsWith('/register');
+      pathname.startsWith('/login') || 
+      pathname.startsWith('/register');
 
+    // If there's a "from" parameter, save it for now
+    const fromParam = req.nextUrl.searchParams.get('from')
+    
     // If the user is not logged in and trying to access protected routes, redirect to login
     if (!session && isProtectedRoute) {
-      console.log('Redirecting to login: no session found for protected route', req.nextUrl.pathname);
+      console.log('Redirecting to login: no session found for protected route', pathname);
       const redirectUrl = req.nextUrl.clone()
       redirectUrl.pathname = '/login'
-      redirectUrl.searchParams.set('from', req.nextUrl.pathname)
+      redirectUrl.searchParams.set('from', pathname)
       return NextResponse.redirect(redirectUrl)
     }
 
     // If the user is logged in and trying to access auth pages, redirect to dashboard
     if (session && isAuthRoute) {
-      console.log('Redirecting to dashboard: session found for auth route', req.nextUrl.pathname);
+      console.log('Redirecting to dashboard: session found for auth route', pathname);
+      
+      // If there was a "from" parameter in the URL, and it's a valid protected route, redirect there
+      if (fromParam) {
+        const isValidRedirect = 
+          fromParam.startsWith('/dashboard') || 
+          fromParam.startsWith('/timers') || 
+          fromParam.startsWith('/create-timer') || 
+          fromParam.startsWith('/edit-timer') || 
+          fromParam.startsWith('/profile');
+          
+        if (isValidRedirect) {
+          console.log(`Redirecting to original destination: ${fromParam}`);
+          const redirectUrl = req.nextUrl.clone()
+          redirectUrl.pathname = fromParam
+          redirectUrl.search = ''
+          return NextResponse.redirect(redirectUrl)
+        }
+      }
+      
+      // Otherwise, go to dashboard
       const redirectUrl = req.nextUrl.clone()
       redirectUrl.pathname = '/dashboard'
       return NextResponse.redirect(redirectUrl)
     }
 
     // If the request is for the root path and the user is logged in, redirect to dashboard
-    if (session && req.nextUrl.pathname === '/') {
+    if (session && pathname === '/') {
+      console.log('Redirecting root path to dashboard for logged in user');
       const redirectUrl = req.nextUrl.clone()
       redirectUrl.pathname = '/dashboard'
       return NextResponse.redirect(redirectUrl)
@@ -49,6 +77,7 @@ export async function middleware(req: NextRequest) {
     return res
   } catch (error) {
     console.error('Middleware error:', error);
+    // In case of error, let the request through rather than blocking navigation
     return res;
   }
 }
